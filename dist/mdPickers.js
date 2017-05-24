@@ -70,7 +70,7 @@ function DatePickerCtrl($scope, $mdDialog, $mdMedia, $timeout, currentDate, opti
     this.displayFormat = options.displayFormat || "ddd, MMM DD";
     this.dateFilter = angular.isFunction(options.dateFilter) ? options.dateFilter : null;
     this.selectingYear = false;
-    
+
     // validate min and max date
 	if (this.minDate && this.maxDate) {
 		if (this.maxDate.isBefore(this.minDate)) {
@@ -236,6 +236,15 @@ function CalendarCtrl($scope) {
     );
     
     this.daysInMonth = [];
+
+    this.$onInit = function() {
+        $scope.$watch(function() { return  self.date.unix() }, function(newValue, oldValue) {
+            if(newValue && newValue !== oldValue)
+                self.updateDaysInMonth();
+        });
+    
+        self.updateDaysInMonth();
+    }
     
     this.getDaysInMonth = function() {
         var days = self.date.daysInMonth(),
@@ -280,13 +289,6 @@ function CalendarCtrl($scope) {
     this.updateDaysInMonth = function() {
         self.daysInMonth = self.getDaysInMonth();
     };
-    
-    $scope.$watch(function() { return  self.date.unix() }, function(newValue, oldValue) {
-        if(newValue && newValue !== oldValue)
-            self.updateDaysInMonth();
-    })
-    
-    self.updateDaysInMonth();
 }
 
 module.directive("mdpCalendar", ["$animate", function($animate) {
@@ -589,9 +591,9 @@ function TimePickerCtrl($scope, $mdDialog, time, autoSwitch, $mdMedia) {
     
     this.clockHours = parseInt(this.time.format("h"));
     this.clockMinutes = parseInt(this.time.minutes());
-    
-	$scope.$mdMedia = $mdMedia;
 	
+    $scope.$mdMedia = $mdMedia;
+
 	this.switchView = function() {
 	    self.currentView = self.currentView == self.VIEW_HOURS ? self.VIEW_MINUTES : self.VIEW_HOURS;
 	};
@@ -619,7 +621,7 @@ function ClockCtrl($scope) {
     var TYPE_HOURS = "hours";
     var TYPE_MINUTES = "minutes";
     var self = this;
-    
+
     this.STEP_DEG = 360 / 12;
     this.steps = [];
     
@@ -630,6 +632,10 @@ function ClockCtrl($scope) {
         "minutes": {
             range: 60,
         }
+    }
+
+    this.$onInit = function() {
+        this.init();
     }
     
     this.getPointerStyle = function() {
@@ -702,8 +708,6 @@ function ClockCtrl($scope) {
                 break;
         }
     };
-    
-    this.init();
 }
 
 module.directive("mdpClock", ["$animate", "$timeout", function($animate, $timeout) {
@@ -780,6 +784,7 @@ module.provider("$mdpTimePicker", function() {
                 controller:  ['$scope', '$mdDialog', 'time', 'autoSwitch', '$mdMedia', TimePickerCtrl],
                 controllerAs: 'timepicker',
                 clickOutsideToClose: true,
+                bindToController: true,
                 template: '<md-dialog aria-label="" class="mdp-timepicker" ng-class="{ \'portrait\': !$mdMedia(\'gt-xs\') }">' +
                             '<md-dialog-content layout-gt-xs="row" layout-wrap>' +
                                 '<md-toolbar layout-gt-xs="column" layout-xs="row" layout-align="center center" flex class="mdp-timepicker-time md-hue-1 md-primary">' +

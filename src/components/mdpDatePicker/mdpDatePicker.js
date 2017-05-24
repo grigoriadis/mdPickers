@@ -9,7 +9,7 @@ function DatePickerCtrl($scope, $mdDialog, $mdMedia, $timeout, currentDate, opti
     this.displayFormat = options.displayFormat || "ddd, MMM DD";
     this.dateFilter = angular.isFunction(options.dateFilter) ? options.dateFilter : null;
     this.selectingYear = false;
-    
+
     // validate min and max date
 	if (this.minDate && this.maxDate) {
 		if (this.maxDate.isBefore(this.minDate)) {
@@ -175,6 +175,15 @@ function CalendarCtrl($scope) {
     );
     
     this.daysInMonth = [];
+
+    this.$onInit = function() {
+        $scope.$watch(function() { return  self.date.unix() }, function(newValue, oldValue) {
+            if(newValue && newValue !== oldValue)
+                self.updateDaysInMonth();
+        });
+    
+        self.updateDaysInMonth();
+    }
     
     this.getDaysInMonth = function() {
         var days = self.date.daysInMonth(),
@@ -219,13 +228,6 @@ function CalendarCtrl($scope) {
     this.updateDaysInMonth = function() {
         self.daysInMonth = self.getDaysInMonth();
     };
-    
-    $scope.$watch(function() { return  self.date.unix() }, function(newValue, oldValue) {
-        if(newValue && newValue !== oldValue)
-            self.updateDaysInMonth();
-    })
-    
-    self.updateDaysInMonth();
 }
 
 module.directive("mdpCalendar", ["$animate", function($animate) {
